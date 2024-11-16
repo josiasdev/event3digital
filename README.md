@@ -21,15 +21,6 @@
 <h3 id="technologies">Back-End:</h3>
 • Python FastAPI
 
-<h3 id="technologies">Banco de Dados:</h3>
-• Relacional: PostgreSQL
-
-
-
-
-
-
-
 <h2 id="colab">Colaboradores</h2>
 
 <table align="center">
