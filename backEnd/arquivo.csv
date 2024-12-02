@@ -1,2 +1,3 @@
-id,nome,categoria,preco,quantidade,dataCriacao
-1,arroz,comida,5.0,100,2024-11-17 17:29:07
+id,nome,descricao,data,local,publicoEsperado
+2,Culto de Jovens,culto de adoração a Deus,2024-09-01 07:00:00+00:00,Quixadá Ceará,1000
+3,Culto de Jovens 2025,culto de adoração a Deus,2024-09-01 07:00:00+00:00,Quixadá Ceará,100

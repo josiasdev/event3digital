@@ -10,44 +10,44 @@ app = FastAPI()
 CSV_file = "arquivo.csv"
 
 
-class Vendas(BaseModel):
+class Eventos(BaseModel):
     id: int
     nome: str
-    categoria: str
-    preco: float
-    quantidade: int
-    dataCriacao: datetime
+    descricao: str
+    data: datetime
+    local: str
+    publicoEsperado: int
+
+def lerDadosCSV():
+    eventos = []
+    if os.path.exists(CSV_file):
+        with open (CSV_file, mode="r", newline="") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                eventos.append(Eventos(**row))
+    return eventos
+
+def escreverDadosCSV(eventos):
+    with open(CSV_file, mode="w", newline="") as file:
+        fieldnames = ["id", "nome","descricao", "data" , "local", "publicoEsperado"]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for evento in eventos:
+            writer.writerow(evento.dict())
+            
+            
+@app.get("/eventos", response_model=list[Eventos])
+def listarEventos():
+    return lerDadosCSV()
 
 
-def inserirEntidade(venda: Vendas):
-    is_new_file = not os.path.exists(CSV_file)
-    with open(CSV_file, mode="a", newline="", encoding="utf-8") as file:
-        fieldNames = ["id", "nome", "categoria", "preco", "quantidade", "dataCriacao"]
-        writer = csv.DictWriter(file, fieldnames=fieldNames)
-        if is_new_file:
-            writer.writeheader()
-
-        writer.writerow(
-            {
-                "id": venda.id,
-                "nome": venda.nome,
-                "categoria": venda.categoria,
-                "preco": venda.preco,
-                "quantidade": venda.quantidade,
-                "dataCriacao": venda.dataCriacao.strftime("%Y-%m-%d %H:%M:%S")
-            }
-        )
-
-
-@app.post("/vendas/")
-def criarVenda(venda: Vendas):
-    inserirEntidade(venda)
-    return {
-        "status": "success",
-        "message": "Venda cadastrada com sucesso!",
-        "venda": venda,
-    }
-    raise HTTPException(
-        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-        detail=f"Erro ao cadastrar a venda:",
-    )
+@app.post("/eventos", response_model=Eventos, status_code=HTTPStatus.CREATED)
+def criarEvento(evento: Eventos):
+    eventos = lerDadosCSV()
+    # p['id'] para acessar a chave id de cada dicionário para retornar todos.
+    if any(p.id == evento.id for p in eventos):
+        raise HTTPException(status_code=400, detail="Evento já existente")
+    eventos.append(evento)
+    escreverDadosCSV(eventos)
+    return evento
+    
