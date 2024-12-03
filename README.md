@@ -1,11 +1,11 @@
 <div align="center" style="display: flex; justify-content: center; align-items: center">
-  <img src="./icones/evento_logo.png" alt="Logo" style="width: 50px; height: 50px; margin-right: 10px;">
+  <img src="./icones/evento_logo.png" alt="Logo" style="width: 90px; height: 90px; margin-right: 10px;">
   <h1 style="font-weight: bold; margin: 0;">Event3 Digital</h1>
 </div>
 
 <p align="center">
- <a href="#technologies">Tecnologias</a> •
- <a href="#colab">Colaboradores</a> •
+ <a href="#technologies">Tecnologias</a>•<br>
+ <a href="#colab">Colaboradores</a>•<br>
 </p>
 
 <p align="center">
