@@ -17,6 +17,7 @@ class Eventos(BaseModel):
     data: datetime
     local: str
     publicoEsperado: int
+    
 
 def lerDadosCSV():
     eventos = []
@@ -44,10 +45,19 @@ def listarEventos():
 @app.post("/eventos", response_model=Eventos, status_code=HTTPStatus.CREATED)
 def criarEvento(evento: Eventos):
     eventos = lerDadosCSV()
-    # p['id'] para acessar a chave id de cada dicionário para retornar todos.
     if any(p.id == evento.id for p in eventos):
-        raise HTTPException(status_code=400, detail="Evento já existente")
+        raise HTTPException(status_code=400,detail="Evento já existente")
     eventos.append(evento)
     escreverDadosCSV(eventos)
     return evento
     
+
+@app.put("/eventos/{id}", response_model=Eventos)
+def atualizarEvento(id: int, eventoAtualizado: Eventos):
+    eventos = lerDadosCSV()
+    for i, evento in enumerate(eventos):
+        if evento.id == id:
+            eventos[i] = eventoAtualizado
+            escreverDadosCSV(eventos)
+            return eventoAtualizado
+    raise HTTPException(status_code=404, detail="Evento não encontrado")
