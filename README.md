@@ -1,13 +1,16 @@
-<h1 align="center" style="font-weight: bold;">Projeto Persistência💻</h1>
+<div align="center" style="display: flex; justify-content: center; align-items: center">
+  <img src="./icones/evento_logo.png" alt="Logo" style="width: 50px; height: 50px; margin-right: 10px;">
+  <h1 style="font-weight: bold; margin: 0;">Event3 Digital</h1>
+</div>
 
 <p align="center">
- <a href="#technologies">Tecnologias</a> • 
+ <a href="#technologies">Tecnologias</a> •
  <a href="#colab">Colaboradores</a> •
 </p>
 
 <p align="center">
     <b>
-	Um sistema completo para gerenciar dados de produtos.
+  Event3 digital é uma plataforma para criar e gerenciar eventos digitais.
     </b>
 </p>
 
