@@ -37,6 +37,12 @@ def escreverDadosCSV(eventos):
         for evento in eventos:
             writer.writerow(evento.dict())
 
+def calcular_hash():
+    sha256 = hashlib.sha256()
+    with open(CSV_file, "rb") as file:
+        while chunk := file.read(4096):
+            sha256.update(chunk)
+    return sha256.hexdigest()
 
 @app.get("/eventos", response_model=list[Evento])
 def listarEventos():
@@ -83,3 +89,7 @@ def quantidadeTotalEventos():
         reader = csv.reader(file)
         total = sum(1 for _ in reader) - 1
     return {"quantidade": total if total > 0 else 0}
+    
+@app.get("/integridade")
+def verificarIntegridade():
+    return {"hash" : calcular_hash()}
