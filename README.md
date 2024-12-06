@@ -1,5 +1,5 @@
 <div align="center" style="display: flex; justify-content: center; align-items: center">
-  <img src="./icones/evento_logo.png" alt="Logo" style="width: 90px; height: 90px; margin-right: 10px;">
+  <img src="./frontend/public/logo.png" alt="Logo" style="width: 90px; height: 90px; margin-right: 10px;">
   <h1 style="font-weight: bold; margin: 0;">Event3 Digital</h1>
 </div>
 
