@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 from datetime import datetime
 import csv
 import os
 from http import HTTPStatus
+import hashlib
+from zipfile import ZipFile # Criar zip  
+from io import BytesIO
 
 
 app = FastAPI()
@@ -93,3 +96,25 @@ def quantidadeTotalEventos():
 @app.get("/integridade")
 def verificarIntegridade():
     return {"hash" : calcular_hash()}
+
+@app.get("/backup")
+def download_zip():
+    NOME_ZIP = "backup.zip"
+
+    if not os.path.exists(CSV_file):
+        return {"error": f"O arquivo {CSV_file} não foi encontrado."}
+    
+    hash_csv = calcular_hash()
+    
+    copia_memoria_zip = BytesIO()
+    with ZipFile(copia_memoria_zip, "w") as arquivo_backup:
+        arquivo_backup.write(CSV_file, arcname=CSV_file)
+        arquivo_backup.comment = hash_csv.encode("utf-8") # Copiei a ideia de como o Github faz quando baixa arquivo .zip
+
+    copia_memoria_zip.seek(0)
+
+    return Response(
+        copia_memoria_zip.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={NOME_ZIP}"}
+    )
