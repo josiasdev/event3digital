@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Response
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 import csv
@@ -11,6 +12,15 @@ from io import BytesIO
 
 app = FastAPI()
 CSV_file = "arquivo.csv"
+
+# Habilitar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite qualquer origem
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite qualquer método (GET, POST, etc)
+    allow_headers=["*"],  # Permite qualquer cabeçalho
+)
 
 
 class Evento(BaseModel):
