@@ -12,6 +12,7 @@
 !.yarn/releases
 !.yarn/versions
 __pycache__
+/backEnd/app/uv.lock
 
 
 # testing

@@ -10,9 +10,14 @@
 
 <p align="center">
     <b>
-  Event3 digital é uma plataforma para criar e gerenciar eventos digitais.
+  O Event3 Digital é uma plataforma simples e eficiente para criar e gerenciar eventos digitais, oferecendo uma solução prática para organizar eventos de diferentes tipos, como palestras, workshops e encontros virtuais.
     </b>
 </p>
+
+<h2>Funcionalidades:</h2>
+<b>Criação de eventos:</b> Os usuários podem criar eventos com título, descrição, data e horário.<br>
+<b>Local:</b> Opção para definir o local do evento, seja físico ou virtual.<br>
+<b>Público esperado:</b> Definição do público esperado para o evento, com a possibilidade de categorizar o evento conforme o perfil de participantes.<br>
 
 <h2 id="technologies">Tecnologias</h2>
 
