@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 from datetime import datetime
 import csv
@@ -13,19 +14,18 @@ from io import BytesIO
 app = FastAPI()
 CSV_file = "arquivo.csv"
 
-# Habilitar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite qualquer origem
+    allow_origins=["*"],  # Aqui você pode colocar apenas os domínios que você deseja permitir
     allow_credentials=True,
-    allow_methods=["*"],  # Permite qualquer método (GET, POST, etc)
-    allow_headers=["*"],  # Permite qualquer cabeçalho
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
 class Evento(BaseModel):
     id: int
-    nome: str
+    titulo: str
     descricao: str
     data: datetime
     local: str
@@ -38,16 +38,19 @@ def lerDadosCSV():
         with open(CSV_file, mode="r", newline="") as file:
             reader = csv.DictReader(file)
             for row in reader:
+                row['data'] = datetime.fromisoformat(row['data'])
                 eventos.append(Evento(**row))
     return eventos
 
 
 def escreverDadosCSV(eventos):
     with open(CSV_file, mode="w", newline="") as file:
-        fieldnames = ["id", "nome", "descricao", "data", "local", "publicoEsperado"]
+        fieldnames = ["id", "titulo", "descricao", "data", "local", "publicoEsperado"]
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for evento in eventos:
+            evento_dict = evento.dict()
+            evento_dict["data"] = evento.data.isoformat()
             writer.writerow(evento.dict())
 
 def calcular_hash():
@@ -64,12 +67,17 @@ def listarEventos():
 
 @app.post("/eventos", response_model=Evento, status_code=HTTPStatus.CREATED)
 def criarEvento(evento: Evento):
-    eventos = lerDadosCSV()
-    if any(p.id == evento.id for p in eventos):
-        raise HTTPException(status_code=400, detail="Evento já existente")
-    eventos.append(evento)
-    escreverDadosCSV(eventos)
-    return evento
+    try:
+        eventos = lerDadosCSV()
+        if eventos:
+            evento.id = max(evento.id for evento in eventos) + 1
+        else:
+            evento.id = 1  # Caso seja o primeiro evento
+        eventos.append(evento)
+        escreverDadosCSV(eventos)
+        return evento
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar evento: {str(e)}")
 
 
 @app.put("/eventos/{id}", response_model=Evento)
