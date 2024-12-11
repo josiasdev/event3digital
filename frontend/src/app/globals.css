@@ -44,4 +44,10 @@ body {
   .botao.verde:hover{
     @apply bg-green-600;
   }
+  .botao.cinza{
+    @apply bg-gray-500 text-white;
+  }
+  .botao.cinza:hover{
+    @apply bg-gray-800;
+  }
 }
