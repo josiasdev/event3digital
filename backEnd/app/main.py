@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Response, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
 from pydantic import BaseModel
 from datetime import datetime
@@ -12,7 +13,7 @@ from io import BytesIO
 
 
 app = FastAPI()
-CSV_file = "arquivo.csv"
+CSV_file = "eventos.csv"
 
 app.add_middleware(
     CORSMiddleware,
@@ -68,6 +69,9 @@ def listarEventos():
 @app.post("/eventos", response_model=Evento, status_code=HTTPStatus.CREATED)
 def criarEvento(evento: Evento):
     try:
+        if(evento.publicoEsperado < 1):
+            raise HTTPException(status_code=400, detail="Erro ao criar evento: Publico esperado deve ser maior ou igual a 1.")
+            
         eventos = lerDadosCSV()
         if eventos:
             evento.id = max(evento.id for evento in eventos) + 1
@@ -82,6 +86,9 @@ def criarEvento(evento: Evento):
 
 @app.put("/eventos/{id}", response_model=Evento)
 def atualizarEvento(id: int, eventoAtualizado: Evento):
+    if(evento.publicoEsperado < 1):
+        raise HTTPException(status_code=400, detail="Erro ao atualizar evento: Publico esperado deve ser maior ou igual a 1.")
+    
     eventos = lerDadosCSV()
     for i, evento in enumerate(eventos):
         if evento.id == id:
@@ -136,3 +143,38 @@ def download_zip():
         media_type="application/zip",
         headers={"Content-Disposition": f"attachment; filename={NOME_ZIP}"}
     )
+
+@app.get("/eventos/filtro", response_model=list[Evento])
+def filtrarEventos(
+    titulo: Optional[str] = Query(None, alias="nome", description="Filtrar pelo título do evento"),
+    data_inicio: Optional[datetime] = Query(None, description="Filtrar eventos a partir dessa data"),
+    data_fim: Optional[datetime] = Query(None, description="Filtrar eventos até essa data")
+):
+    eventos = lerDadosCSV()
+    
+    # Filtros
+    if titulo:
+        filtro_busca = []
+        for evento in eventos:
+            if titulo.lower() in evento.titulo.lower():
+                filtro_busca.append(evento)
+        eventos = filtro_busca 
+    
+    if data_inicio:
+        filtro_busca = []
+        for evento in eventos:
+            if evento.data.date() >= data_inicio.date():
+                filtro_busca.append(evento)
+        eventos = filtro_busca
+
+    if data_fim:
+        filtro_busca = []
+        for evento in eventos:
+            if evento.data.date() <= data_fim.date():
+                filtro_busca.append(evento)
+        eventos = filtro_busca
+
+    if not eventos:
+        raise HTTPException(status_code=404, detail="Nenhum evento encontrado utilizando os filtros atuais. Que tal fazer uma nova busca?")
+
+    return eventos
