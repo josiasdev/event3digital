@@ -5,7 +5,7 @@ export interface Evento {
   id: number;
   titulo: string;
   descricao: string;
-  data: string; // ISO string (como retornado pelo FastAPI)
+  data: string; 
   local: string;
   publicoEsperado: number;
 }
@@ -36,32 +36,22 @@ export async function criarEvento(evento: Evento): Promise<Evento> {
 }
 
 // Função para atualizar evento
-export async function atualizarEvento(id: number, eventoAtualizado: Evento): Promise<Evento> {
+export const atualizarEvento = async (id: number, evento: Evento) => {
   const response = await fetch(`${baseURL}/eventos/${id}`, {
-    method: "PUT",
+    method: "PUT",  
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(eventoAtualizado),
+    body: JSON.stringify(evento), 
   });
 
   if (!response.ok) {
-    throw new Error(`Erro ao atualizar evento: ${response.statusText}`);
+    throw new Error("Erro ao atualizar o evento");
   }
 
-  return response.json();
-}
-export async function obterEvento(id: number): Promise<Evento> {
-  const response = await fetch(`${baseURL}/eventos/${id}`, {
-    method: "GET",
-  });
+  return await response.json();
+};
 
-  if (!response.ok) {
-    throw new Error(`Erro ao obter evento: ${response.statusText}`);
-  }
-
-  return response.json();
-}
 
 // Função para remover evento
 export async function removerEvento(id: number): Promise<void> {
