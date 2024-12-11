@@ -9,7 +9,7 @@ export default function Home() {
       <div className="flex flex-col items-center gap-4">
         <LogoGrande/>
         <p className="text-zinc-500 font-light w-96 leading-6 text-center select-none">
-          Crie e gerencie seu evento.
+        O Event3 Digital é uma plataforma simples e eficiente para criar e gerenciar eventos digitais, oferecendo uma solução prática para organizar eventos de diferentes tipos, como palestras, workshops e encontros virtuais.
         </p>
       </div>
       <Link href="/evento" className="botao azul text-lg uppercase">
