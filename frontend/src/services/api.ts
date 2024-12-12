@@ -10,6 +10,12 @@ export interface Evento {
   publicoEsperado: number;
 }
 
+interface FiltrosEvento {
+  titulo?: string;
+  data_inicio?: string; // formato ISO 8601
+  data_fim?: string;    // formato ISO 8601
+}
+
 // Função para listar eventos
 export async function listarEventos(): Promise<Evento[]> {
   const response = await fetch(`${baseURL}/eventos`, {
@@ -104,3 +110,36 @@ export async function baixarBackup(): Promise<Blob> {
 
   return response.blob();
 }
+
+export const filtrarEventos = async (filtros: FiltrosEvento): Promise<Evento[]> => {
+  const url = new URL(`${baseURL}/eventos/filtro`);
+
+  // Adiciona os parâmetros de filtro à URL
+  if (filtros.titulo) {
+    url.searchParams.append("nome", filtros.titulo);
+  }
+  if (filtros.data_inicio) {
+    url.searchParams.append("data_inicio", filtros.data_inicio);
+  }
+  if (filtros.data_fim) {
+    url.searchParams.append("data_fim", filtros.data_fim);
+  }
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Nenhum evento encontrado com os filtros fornecidos.");
+      }
+      throw new Error("Erro ao buscar eventos. Tente novamente mais tarde.");
+    }
+
+    const data: Evento[] = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(`Erro na requisição: ${error instanceof Error ? error.message : "Erro desconhecido"}`);
+  }
+} 
