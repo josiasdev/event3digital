@@ -29,6 +29,34 @@
 <h3 id="technologies">Back-End:</h3>
 • Python FastAPI
 
+<h2>Como Rodar o Projeto</h2>
+
+## 1. Configuração do Front-End
+
+### 1.1 Navegue até a pasta do front-end:
+```
+cd frontend
+```
+### 1.2 Instale  as dependências:
+```
+npm install
+```
+### 1.3 Execute o servidor de desenvolvimento:
+```
+npm run dev
+```
+
+## 2. Configuração do Back-End
+### 2.1 Navegue até a pasta do back-end:
+```
+cd BackEnd/app
+```
+
+### 2.2 Execute o servidor:
+```
+uvicorn main:app --reload
+```
+
 <h2 id="colab">Colaboradores</h2>
 
 <table align="center">
