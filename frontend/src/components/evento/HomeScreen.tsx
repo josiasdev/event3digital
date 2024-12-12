@@ -9,6 +9,7 @@ import EventoListar from "./EventList";
 import EventFilter from "./EventFilter";
 import BackupEHash from "./BackupAndHash";
 import TotalEvent from "./TotalEvent";
+import { useRouter } from "next/navigation";
 
 interface Evento {
     id: number;
@@ -23,6 +24,7 @@ const EventoList: React.FC = () => {
     const [eventos, setEventos] = useState<Evento[]>([]);
     const [filtroTitulo, setFiltroTitulo] = useState<string>("");
     const [sha256, setSha256] = useState<string | null>(null);
+    const router = useRouter();
 
     const carregarEventos = async () => {
         const eventosList = await listarEventos();
@@ -43,10 +45,13 @@ const EventoList: React.FC = () => {
     }
 };
 
+const atualizarEvento = (id: number) => {
+    router.push(`/editar/${id}`); // Redireciona para /evento com o ID do evento
+};
+
     const excluirEvento = async (id: number) => {
         await removerEvento(id);
         setEventos((prev) => prev.filter((evento) => evento.id !== id));
-        alert("Evento Excluido com sucesso");
     };
 
     const obterSha256 = async () => {
@@ -82,7 +87,7 @@ const EventoList: React.FC = () => {
                     </>
                 )}
                 <TotalEvent/>
-                <EventoListar eventos={eventos} Editar={() => {}} Excluir={excluirEvento} />
+                <EventoListar eventos={eventos} onEditar={atualizarEvento} onExcluir={excluirEvento} />
             </div>
         </Background>
     );

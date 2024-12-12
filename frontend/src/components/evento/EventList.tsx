@@ -12,11 +12,11 @@ interface Evento {
 
 interface EventListProps {
     eventos: Evento[];
-    Editar: (id: number) => void;
-    Excluir: (id: number) => void;
+    onEditar: (id: number) => void;
+    onExcluir: (id: number) => void;
 }
 
-const EventList: React.FC<EventListProps> = ({ eventos, Editar: Editar, Excluir: Excluir }) => {
+const EventList: React.FC<EventListProps> = ({ eventos, onEditar: onEditar, onExcluir: onExcluir }) => {
     return (
         <ul>
             {eventos.length > 0 ? (
@@ -27,10 +27,10 @@ const EventList: React.FC<EventListProps> = ({ eventos, Editar: Editar, Excluir:
                         <p>Data: {new Date(evento.data).toLocaleString()}</p>
                         <p>Local: {evento.local}</p>
                         <p>Público esperado: {evento.publicoEsperado}</p>
-                        <button onClick={() => Editar(evento.id)} className="botao verde mb-4 px-5">
+                        <button onClick={() => onEditar(evento.id)} className="botao verde mb-4 px-5">
                             Editar
                         </button>
-                        <button onClick={() => Excluir(evento.id)} className="botao vermelho px-5">
+                        <button onClick={() => onExcluir(evento.id)} className="botao vermelho px-5">
                             Excluir
                         </button>
                     </li>
