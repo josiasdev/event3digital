@@ -24,6 +24,7 @@ const EventoList: React.FC = () => {
     const [eventos, setEventos] = useState<Evento[]>([]);
     const [filtroTitulo, setFiltroTitulo] = useState<string>("");
     const [sha256, setSha256] = useState<string | null>(null);
+    const [totalEventos, setTotalEventos] = useState<number>(0);
     const router = useRouter();
 
     const carregarEventos = async () => {
@@ -33,25 +34,26 @@ const EventoList: React.FC = () => {
 
     const buscarEventosFiltrados = async () => {
         try {
-        const eventosFiltrados = await filtrarEventos({ titulo: filtroTitulo });
-        if (eventosFiltrados.length === 0) {
-            setEventos([]);
-        } else {
-            setEventos(eventosFiltrados);
+            const eventosFiltrados = await filtrarEventos({ titulo: filtroTitulo });
+            setEventos(eventosFiltrados.length === 0 ? [] : eventosFiltrados);
+        } catch (error) {
+            alert("Evento não encontrado");
+            setEventos([]); // Garante que a lista fique vazia em caso de erro
         }
-    }catch (error) {
-        alert("Evento não encontrado");
-        setEventos([]); // Garante que a lista fique vazia em caso de erro
-    }
-};
+    };
 
-const atualizarEvento = (id: number) => {
-    router.push(`/editar/${id}`); // Redireciona para /evento com o ID do evento
-};
+    const atualizarEvento = (id: number) => {
+        router.push(`/editar/${id}`); // Redireciona para /evento com o ID do evento
+    };
 
     const excluirEvento = async (id: number) => {
-        await removerEvento(id);
-        setEventos((prev) => prev.filter((evento) => evento.id !== id));
+        try {
+            await removerEvento(id); // Remove o evento no backend
+            setEventos((prev) => prev.filter((evento) => evento.id !== id)); // Atualiza a lista
+            alert("Evento excluido")
+        } catch (error) {
+            console.error("Erro ao excluir evento:", error);
+        }
     };
 
     const obterSha256 = async () => {
@@ -86,7 +88,7 @@ const atualizarEvento = (id: number) => {
                         <BackupEHash sha256={sha256} onDownload={baixarArquivo} onGenerateHash={obterSha256} />
                     </>
                 )}
-                <TotalEvent/>
+                <TotalEvent onUpdateTotal={setTotalEventos} />
                 <EventoListar eventos={eventos} onEditar={atualizarEvento} onExcluir={excluirEvento} />
             </div>
         </Background>
