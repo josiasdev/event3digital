@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation"; // useParams do App Router
-import { atualizarEvento } from "../../../../services/api";  // Função para atualizar evento
+import { atualizarEvento, buscarEventoPorId } from "../../../../services/api";  // Função para atualizar evento
 import EventoUpdate from "@/components/evento/EventUpdate";  // Componente de atualização de evento
 
 interface Evento {
@@ -22,22 +22,22 @@ const EventoPage: React.FC = () => {
   const [erro, setErro] = useState<string>("");  // Estado de erro
 
   // Simulação de carregamento do evento (pode ser substituído por dados reais)
-  React.useEffect(() => {
+  useEffect(() => {
     if (id) {
-      // Exemplo de evento, substitua por dados reais ou gere de acordo com seu fluxo.
-      const eventoSimulado: Evento = {
-        id: Number(id),
-        titulo: "Evento de Exemplo",
-        descricao: "Descrição do evento de exemplo",
-        data: "2024-12-15T10:00",
-        local: "Local do Evento",
-        publicoEsperado: 200,
+      const fetchEvento = async () => {
+        try {
+          const eventoData = await buscarEventoPorId(Number(id));  // Chama a função buscarEventoPorId
+          setEvento(eventoData);
+          setLoading(false);
+        } catch (error) {
+          setErro(error instanceof Error ? error.message : "Erro desconhecido");
+          setLoading(false);
+        }
       };
-
-      setEvento(eventoSimulado);  // Atualiza com o evento simulado
-      setLoading(false);  // Finaliza o carregamento
+      fetchEvento();
     }
   }, [id]);
+
 
   const handleSubmit = async (eventoAtualizado: Evento) => {
     try {

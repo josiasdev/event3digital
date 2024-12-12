@@ -143,3 +143,20 @@ export const filtrarEventos = async (filtros: FiltrosEvento): Promise<Evento[]> 
     throw new Error(`Erro na requisição: ${error instanceof Error ? error.message : "Erro desconhecido"}`);
   }
 } 
+
+export const buscarEventoPorId = async (id: number): Promise<Evento> => {
+  const response = await fetch(`${baseURL}/eventos/${id}`, {
+    method: "GET",
+  });
+
+  
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar evento com ID ${id}: ${response.statusText}`);
+  }
+  const evento = await response.json();
+  if (evento.data) {
+    evento.data = new Date(evento.data).toISOString(); // Converte a data para ISO 8601
+  }
+
+  return evento;
+};
