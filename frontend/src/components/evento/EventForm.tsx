@@ -14,7 +14,7 @@ interface Evento {
   publicoEsperado: number;
 }
 
-const EventoForm: React.FC = () => {
+const EventForm: React.FC = () => {
   const [evento, setEvento] = useState<Evento>({
     id: 0,
     titulo: "",
@@ -38,8 +38,12 @@ const EventoForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (evento.publicoEsperado < 1) {
+      alert("Público esperado deve ser maior ou igual a 1.");
+      return;
+    }
 
-    const eventoSubmit = {
+    const eventSubmit = {
       ...evento,
       data: new Date(evento.data).toISOString(),
       publicoEsperado: Number(evento.publicoEsperado),
@@ -48,7 +52,7 @@ const EventoForm: React.FC = () => {
 
 
     try {
-      await criarEvento(eventoSubmit);
+      await criarEvento(eventSubmit);
       alert("Evento criado com sucesso!");
       setEvento({
         id: 0,
@@ -62,7 +66,7 @@ const EventoForm: React.FC = () => {
       router.push("/eventos");
     } catch (error) {
       console.error("Erro ao criar evento:", error);
-      alert("Erro ao criar evento. Verifique os dados e tente novamente.");
+      alert("Verifique os dados e tente novamente.");
     }
   };
 
@@ -150,4 +154,4 @@ const EventoForm: React.FC = () => {
   );
 };
 
-export default EventoForm;
+export default EventForm;
