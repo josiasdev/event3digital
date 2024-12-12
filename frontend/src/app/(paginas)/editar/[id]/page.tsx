@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation"; // useParams do App Router
 import { atualizarEvento } from "../../../../services/api";  // Função para atualizar evento
-import EventoUpdate from "@/components/evento/EventoUpdate";  // Componente de atualização de evento
+import EventoUpdate from "@/components/evento/EventUpdate";  // Componente de atualização de evento
 
 interface Evento {
   id: number;
