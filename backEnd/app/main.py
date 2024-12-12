@@ -55,7 +55,7 @@ class Evento(BaseModel):
 
 def lerDadosCSV():
     try:
-        with open(CSV_file, mode="r", newline="") as file:
+        with open(CSV_file, mode="r", newline="", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             eventos = []
             for row in reader:
@@ -70,7 +70,6 @@ def lerDadosCSV():
         return []
     except UnicodeDecodeError:
         logging.error("O arquivo CSV contém caracteres que não pdem ser decoficados")
-        print("Error: The CSV file contains characters that cannot be decoded.")
         return []
     except Exception as e:
         logging.error(f"Erro inesperado '{e}'.")
@@ -78,7 +77,7 @@ def lerDadosCSV():
 
 def escreverDadosCSV(eventos):
     try:
-        with open(CSV_file, mode="w", newline="") as file:
+        with open(CSV_file, mode="w", newline="", encoding="utf-8") as file:
             fieldnames = ["id", "titulo", "descricao", "data", "local", "publicoEsperado"]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
@@ -234,3 +233,12 @@ def filtrarEventos(
     
     logging.info(f"Eventos filtrados com sucesso. Total: {len(eventos)}")
     return eventos
+
+# pegar os dados de um evento especifico para atualizar
+@app.get("/eventos/{id}", response_model=Evento)
+async def buscarEvento(id: int):
+    eventos = lerDadosCSV()
+    evento = next((evento for evento in eventos if evento.id == id), None)
+    if evento is None:
+        raise HTTPException(status_code=404, detail="Evento não encontrado")
+    return evento
