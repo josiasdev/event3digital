@@ -1,4 +1,4 @@
-import EventoList from "@/components/evento/EventoList";
+import EventoList from "@/components/evento/HomeScreen";
 
 export default function Page(){
     return(
