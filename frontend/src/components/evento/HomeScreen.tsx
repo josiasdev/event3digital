@@ -46,6 +46,7 @@ const EventoList: React.FC = () => {
     const excluirEvento = async (id: number) => {
         await removerEvento(id);
         setEventos((prev) => prev.filter((evento) => evento.id !== id));
+        alert("Evento Excluido com sucesso");
     };
 
     const obterSha256 = async () => {
