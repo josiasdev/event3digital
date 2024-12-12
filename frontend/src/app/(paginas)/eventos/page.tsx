@@ -1,10 +1,10 @@
-import EventoList from "@/components/evento/HomeScreen";
+import EventList from "@/components/evento/HomeScreen";
 
 export default function Page(){
     return(
         <div>
-            <EventoList>               
-            </EventoList>
+            <EventList>               
+            </EventList>
         </div>
     );
 }
