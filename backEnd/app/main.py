@@ -9,10 +9,32 @@ from http import HTTPStatus
 import hashlib
 from zipfile import ZipFile # Criar zip  
 from io import BytesIO
+import logging
+import yaml
 
+# Carregar configurações do arquivo YAML
+with open('config.yaml', 'r') as yaml_file:
+    configuracao_log = yaml.safe_load(yaml_file)
+
+# Configurações de logging a partir do YAML
+log_config = configuracao_log['logging']
+nivel_log = log_config['level']
+arquivo_log = log_config['file']
+formato_log = log_config['format']
+codificacao_log = log_config['encoding']
+
+# Configurando o logging
+logging.basicConfig(
+    filename = arquivo_log,
+    level = getattr(logging, nivel_log.upper(), logging.INFO),
+    format = formato_log,
+    datefmt = "%Y-%m-%d %H:%M:%S",
+    encoding = codificacao_log
+)
 
 app = FastAPI()
-CSV_file = "eventos.csv"
+
+CSV_file = configuracao_log['data']['file']
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,27 +53,41 @@ class Evento(BaseModel):
     local: str
     publicoEsperado: int
 
-
 def lerDadosCSV():
-    eventos = []
-    if os.path.exists(CSV_file):
+    try:
         with open(CSV_file, mode="r", newline="") as file:
             reader = csv.DictReader(file)
+            eventos = []
             for row in reader:
                 row['data'] = datetime.fromisoformat(row['data'])
                 eventos.append(Evento(**row))
-    return eventos
-
+        return eventos
+    except FileNotFoundError:
+        logging.error(f"Arquivo CSV '{CSV_file}' não encontrado.")
+        return []
+    except csv.Error as e:
+        logging.error(f"Erro ao decodificar o arquivo CSV '{e}'.")
+        return []
+    except UnicodeDecodeError:
+        logging.error("O arquivo CSV contém caracteres que não pdem ser decoficados")
+        print("Error: The CSV file contains characters that cannot be decoded.")
+        return []
+    except Exception as e:
+        logging.error(f"Erro inesperado '{e}'.")
+        return []
 
 def escreverDadosCSV(eventos):
-    with open(CSV_file, mode="w", newline="") as file:
-        fieldnames = ["id", "titulo", "descricao", "data", "local", "publicoEsperado"]
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        for evento in eventos:
-            evento_dict = evento.dict()
-            evento_dict["data"] = evento.data.isoformat()
-            writer.writerow(evento.dict())
+    try:
+        with open(CSV_file, mode="w", newline="") as file:
+            fieldnames = ["id", "titulo", "descricao", "data", "local", "publicoEsperado"]
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            for evento in eventos:
+                evento_dict = evento.dict()
+                evento_dict["data"] = evento.data.isoformat()
+                writer.writerow(evento.dict())
+    except Exception as e:
+        logging.error(f"Erro ao salvar o arquivo CSV '{CSV_file}': {e}")
 
 def calcular_hash():
     sha256 = hashlib.sha256()
@@ -62,15 +98,16 @@ def calcular_hash():
 
 @app.get("/eventos", response_model=list[Evento])
 def listarEventos():
+    logging.info(f"Listando eventos. Total de eventos: {len(lerDadosCSV())}")
     return lerDadosCSV()
-
 
 @app.post("/eventos", response_model=Evento, status_code=HTTPStatus.CREATED)
 def criarEvento(evento: Evento):
-    try:
-        if(evento.publicoEsperado < 1):
-            raise HTTPException(status_code=400, detail="Erro ao criar evento: Publico esperado deve ser maior ou igual a 1.")
-            
+    if(evento.publicoEsperado < 1):
+        logging.warning(f"Tentativa de criação de evento com público esperado inválido: {evento.publicoEsperado}")
+        raise HTTPException(status_code=400, detail="Erro ao criar evento: Publico esperado deve ser maior ou igual a 1.")
+
+    try:            
         eventos = lerDadosCSV()
         if eventos:
             evento.id = max(evento.id for evento in eventos) + 1
@@ -78,14 +115,16 @@ def criarEvento(evento: Evento):
             evento.id = 1  # Caso seja o primeiro evento
         eventos.append(evento)
         escreverDadosCSV(eventos)
+        logging.info(f"Evento criado com sucesso: {evento.id} - {evento.titulo}")
         return evento
     except Exception as e:
+        logging.error(f"Erro ao criar evento: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Erro ao criar evento: {str(e)}")
-
 
 @app.put("/eventos/{id}", response_model=Evento)
 def atualizarEvento(id: int, eventoAtualizado: Evento):
-    if(evento.publicoEsperado < 1):
+    if(eventoAtualizado.publicoEsperado < 1):
+        logging.warning(f"Tentativa de atualização de evento com público esperado inválido: {eventoAtualizado.publicoEsperado}")
         raise HTTPException(status_code=400, detail="Erro ao atualizar evento: Publico esperado deve ser maior ou igual a 1.")
     
     eventos = lerDadosCSV()
@@ -93,32 +132,40 @@ def atualizarEvento(id: int, eventoAtualizado: Evento):
         if evento.id == id:
             eventos[i] = eventoAtualizado
             escreverDadosCSV(eventos)
+            logging.info(f"Evento atualizado com sucesso: {id} - {eventoAtualizado.titulo}")
             return eventoAtualizado
+    logging.error(f"Erro ao atualizar evento: Evento com ID {id} não encontrado.")
     raise HTTPException(status_code=404, detail="Evento não encontrado")
 
 
-@app.delete("/eventos/{id}", status_code=HTTPStatus.NO_CONTENT)
+@app.delete("/eventos/{id}")
 def removerEventos(id: int):
     eventos = lerDadosCSV()
+
     for i, evento in enumerate(eventos):
         if evento.id == id:
             eventos.pop(i)
             escreverDadosCSV(eventos)
+            logging.info(f"Evento deletado com sucesso: {id} - {evento.titulo}")
             return {"id": id, "message": "Evento deletado"}
-        raise HTTPException(status_code=404, detail="Evento não encontrado")
-
+        
+    logging.error(f"Erro ao deletar evento: Evento com ID {id} não encontrado.")
+    raise HTTPException(status_code=404, detail="Evento não encontrado")
 
 @app.get("/eventos/quantidade")
 def quantidadeTotalEventos():
     if not os.path.exists(CSV_file):
+        logging.error("Nenhum evento encontrado, arquivo CSV inexistente.")
         return {"quantidade" : 0}
     with open(CSV_file, mode="r", newline="") as file:
         reader = csv.reader(file)
         total = sum(1 for _ in reader) - 1
+    logging.info(f"Total de eventos: {total}")
     return {"quantidade": total if total > 0 else 0}
     
 @app.get("/integridade")
 def verificarIntegridade():
+    logging.info(f"Verificação de integridade realizada. Hash: {calcular_hash()}")
     return {"hash" : calcular_hash()}
 
 @app.get("/backup")
@@ -126,6 +173,7 @@ def download_zip():
     NOME_ZIP = "backup.zip"
 
     if not os.path.exists(CSV_file):
+        logging.error(f"Arquivo CSV {CSV_file} não encontrado para backup.")
         return {"error": f"O arquivo {CSV_file} não foi encontrado."}
     
     hash_csv = calcular_hash()
@@ -137,6 +185,8 @@ def download_zip():
 
     copia_memoria_zip.seek(0)
 
+    logging.info(f"Backup do arquivo CSV realizado com sucesso.")
+    
     return Response(
         copia_memoria_zip.getvalue(),
         media_type="application/zip",
@@ -174,6 +224,13 @@ def filtrarEventos(
         eventos = filtro_busca
 
     if not eventos:
+        parametros_filtro = {
+            "titulo": titulo,
+            "data_inicio": data_inicio,
+            "data_fim": data_fim
+        }
+        logging.warning(f"Nenhum evento encontrado com os filtros fornecidos. {parametros_filtro}")
         raise HTTPException(status_code=404, detail="Nenhum evento encontrado utilizando os filtros atuais. Que tal fazer uma nova busca?")
-
+    
+    logging.info(f"Eventos filtrados com sucesso. Total: {len(eventos)}")
     return eventos
