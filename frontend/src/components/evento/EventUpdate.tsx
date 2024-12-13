@@ -18,8 +18,25 @@ const EventoUpdate: React.FC<EventoAtualizarProps> = ({ evento, onSubmit }) => {
   const [formData, setFormData] = useState<Evento>(evento);  // Preenche os dados iniciais
 
   useEffect(() => {
-    setFormData(evento);  // Atualiza os dados do formulário quando o evento muda
+    // Formatar a data recebida da API
+    const formattedDate = formatDate(evento.data);
+    setFormData((prevData) => ({
+      ...prevData,
+      data: formattedDate,  // Atualiza o campo de data com o formato correto
+    }));
   }, [evento]);
+
+  // Função para formatar a data no formato adequado para o campo datetime-local
+  const formatDate = (date: string) => {
+    const dateObj = new Date(date);  // Converte a string da data para um objeto Date
+    const year = dateObj.getFullYear();
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+    const day = dateObj.getDate().toString().padStart(2, "0");
+    const hours = dateObj.getHours().toString().padStart(2, "0");
+    const minutes = dateObj.getMinutes().toString().padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
